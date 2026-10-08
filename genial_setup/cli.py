@@ -1,16 +1,18 @@
 """Parser and handler for the `hermes genial-setup` command.
 
-Pure functions (no HERMES_HOME access) so they can be tested without the
-Hermes runtime. Concrete actions land in Tasks 1.2+ (Phases 1-4).
-
-User-facing strings (help texts, prints) are in Portuguese — the plugin's
-audience is the Genial Care team. See README "Conventions".
+Pure dispatch: concrete work lives in the genial_setup submodules
+(config, gcloud_install, gcs, browser). User-facing strings (help texts,
+prints) are in Portuguese — the plugin's audience is the Genial Care team.
+See README "Conventions".
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import sys
+
+from genial_setup import config
 
 PROG = "genial-setup"
 
@@ -63,11 +65,44 @@ def register_cli(subparser: argparse.ArgumentParser) -> None:
     subparser.set_defaults(func=run)
 
 
+def _run_setup(args: argparse.Namespace) -> int:
+    """Full setup: provider + OpenRouter key (Task 1.2). Later phases append:
+    gcloud (Phase 2), GCS files (Phase 3), browser (Phase 4)."""
+    print("==> Configurando provider LLM (Claude Sonnet 5 via OpenRouter)...")
+
+    def prompt() -> str:
+        return input("Cole sua chave OpenRouter (sk-or-...) e pressione Enter: ")
+
+    try:
+        result = config.ensure_key(
+            config.env_path(),
+            shell_key=os.environ.get("OPENROUTER_API_KEY"),
+            prompt_fn=prompt,
+        )
+    except config.MissingKeyError as exc:
+        print(f"✗ {exc}")
+        return 1
+
+    if result.source == "existing":
+        print("==> Chave OpenRouter já configurada.")
+    elif result.source == "env":
+        print("==> Encontrei OPENROUTER_API_KEY já exportada no seu shell — reaproveitando.")
+    else:
+        print(f"==> Chave OpenRouter salva em {config.env_path()}")
+
+    config.apply_provider_config()
+    print("==> Provider configurado: modelo principal, auxiliares e delegação.")
+
+    print("==> Próximas fases (gcloud, MCPs via GCS, browser) ainda não implementadas.")
+    return 0
+
+
 def run(args: argparse.Namespace) -> int:
     """handler_fn called by Hermes when the user runs `hermes genial-setup`."""
     action = getattr(args, "subcommand", None) or "setup"
-    print(f"genial-setup: ação '{action}' ainda não implementada (Tasks 1.2+ do plano).")
-    print("Estrutura do comando no ar — as ações reais chegam nas próximas fases.")
+    if action == "setup":
+        return _run_setup(args)
+    print(f"genial-setup: ação '{action}' ainda não implementada (Fases 2-4 do plano).")
     return 0
 
 
