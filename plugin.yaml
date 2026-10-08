@@ -1,3 +1,3 @@
 name: genial-setup
 version: 0.1.0
-description: "Setup guiado do Hermes na Genial Care: provider OpenRouter (Claude Sonnet 5), MCPs corporativos, gcloud com conta Genial e browser connect via CDP. Roda `hermes genial-setup`."
+description: "Guided Hermes setup for Genial Care: OpenRouter provider (Claude Sonnet 5), corporate MCPs, gcloud with a Genial account and browser connect via CDP. Run `hermes genial-setup`."

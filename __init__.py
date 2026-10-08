@@ -1,20 +1,20 @@
 # ============================================================================
-# Plugin Hermes — Genial Care
+# Hermes Plugin — Genial Care
 # ============================================================================
-# Nome: genial-setup
-# Registra o comando CLI `hermes genial-setup` (setup guiado: provider
-# OpenRouter, MCPs corporativos, gcloud, browser CDP).
+# Name: genial-setup
+# Registers the CLI command `hermes genial-setup` (guided setup: OpenRouter
+# provider, corporate MCPs, gcloud, browser CDP).
 #
-# Plugin 100% NATIVO (plugin.yaml + register(ctx)) — sem plugin.json/mcp.json
-# portáteis: o loader do Hermes é exclusivo e ignora o mcp.json quando o
-# manifest nativo está presente (ver plano, Task 0.1). Os MCPs corporativos
-# são configurados pelo próprio comando via merge aditivo no config.yaml
-# (Fase 3), e a skill é registrada via ctx.register_skill (Fase 5).
+# This is a 100% NATIVE plugin (plugin.yaml + register(ctx)) — no portable
+# plugin.json/mcp.json: the Hermes loader is exclusive and ignores mcp.json
+# when the native manifest is present (see plan, Task 0.1). Corporate MCPs
+# are configured by the command itself via additive merge into config.yaml
+# (Phase 3), and the skill is registered via ctx.register_skill (Phase 5).
 #
-# Uso (após `hermes plugins install GenialCare/hermes-plugin-genial --enable`):
-#   hermes genial-setup            # setup completo
-#   hermes genial-setup gcloud     # só gcloud (instalar/autenticar)
-#   hermes genial-setup status     # diagnóstico do ambiente
+# Usage (after `hermes plugins install GenialCare/hermes-plugin-genial --enable`):
+#   hermes genial-setup            # full setup
+#   hermes genial-setup gcloud     # gcloud only (install/authenticate)
+#   hermes genial-setup status     # environment diagnostics
 # ============================================================================
 
 from __future__ import annotations
@@ -27,9 +27,11 @@ PLUGIN_ROOT = Path(__file__).resolve().parent
 
 
 def register(ctx) -> None:
-    """Chamado pelo plugin system do Hermes no discover/load."""
+    """Called by the Hermes plugin system during discovery/load."""
     ctx.register_cli_command(
         name="genial-setup",
+        # help/description are user-facing (shown in `hermes --help`) — kept in
+        # Portuguese on purpose; see README "Conventions".
         help="Setup guiado do Hermes na Genial Care (provider, MCPs, gcloud, browser)",
         setup_fn=cli.register_cli,
         handler_fn=cli.run,

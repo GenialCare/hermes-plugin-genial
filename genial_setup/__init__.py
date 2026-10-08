@@ -1,1 +1,1 @@
-"""genial_setup — implementação do comando `hermes genial-setup`."""
+"""genial_setup — implementation of the `hermes genial-setup` command."""

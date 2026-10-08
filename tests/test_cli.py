@@ -1,17 +1,15 @@
-"""Testes do parser e do handler do comando genial-setup.
+"""Tests for the genial-setup command parser and handler.
 
-O handler e o parser são funções puras — testáveis sem importar o Hermes
-real nem tocar em HERMES_HOME.
+Pure functions (no HERMES_HOME access) — testable without importing the
+real Hermes runtime.
 """
 
 from __future__ import annotations
 
-import pytest
-
 from genial_setup import cli
 
 
-def test_parser_aceita_flags_do_setup():
+def test_parser_accepts_setup_flags():
     args = cli.build_parser().parse_args(
         ["--force-mcps", "--skip-browser", "--skip-gcloud"]
     )
@@ -20,26 +18,26 @@ def test_parser_aceita_flags_do_setup():
     assert args.skip_gcloud is True
 
 
-def test_parser_flags_sao_false_por_padrao():
+def test_parser_flags_default_to_false():
     args = cli.build_parser().parse_args([])
     assert args.force_mcps is False
     assert args.skip_browser is False
     assert args.skip_gcloud is False
 
 
-def test_parser_default_e_acao_setup_completa():
+def test_parser_default_action_is_full_setup():
     args = cli.build_parser().parse_args([])
-    assert args.subcommand is None, "sem subcomando, a ação default é o setup completo"
+    assert args.subcommand is None, "with no subcommand, the default action is the full setup"
 
 
-def test_parser_aceita_subcomandos_gcloud_e_status():
+def test_parser_accepts_gcloud_and_status_subcommands():
     assert cli.build_parser().parse_args(["gcloud"]).subcommand == "gcloud"
     assert cli.build_parser().parse_args(["status"]).subcommand == "status"
 
 
-def test_run_retorna_zero_e_avisa_acoes_pendentes(capsys):
-    """v0.1: handler ainda é esqueleto — deve sair com 0 e deixar claro que a
-    ação ainda não implementa nada (evita 'comando silencioso que não faz nada')."""
+def test_run_returns_zero_and_warns_about_pending_actions(capsys):
+    """v0.1: the handler is still a skeleton — it must exit with 0 and be
+    explicit that the action does nothing yet (never a silent no-op)."""
     args = cli.build_parser().parse_args([])
     rc = cli.run(args)
     out = capsys.readouterr().out

@@ -1,27 +1,30 @@
 # Hermes Plugin — Genial Care
 
-Plugin Hermes que configura o setup da Genial Care na sua máquina com um
-comando: `hermes genial-setup`.
+A Hermes plugin that sets up the Genial Care workspace configuration on your
+machine with a single command: `hermes genial-setup`.
 
-## O que o plugin faz
+> User-facing CLI messages are in Portuguese (the plugin's audience is the
+> Genial Care team). Code, docstrings, comments and documentation are in English.
 
-| Item | Descrição |
+## What the plugin does
+
+| Item | Description |
 |---|---|
-| Provider LLM | `anthropic/claude-sonnet-5` via OpenRouter (modelo principal, auxiliares e delegação) |
-| Chave OpenRouter | Obrigatória — o comando pede na primeira execução e grava em `~/.hermes/.env` |
-| MCPs corporativos | Atlassian, Granola, Slack e Metabase via `mcp.json` centralizado no GCS (merge aditivo) |
-| gcloud | Instala e autentica com sua conta `@genialcare.com.br` (fase 2 do plano) |
-| Browser | Chrome com depuração remota (CDP) na porta 9222, perfil isolado |
-| gws | Orientação de autenticação (client_secret baixado do GCS) |
+| LLM provider | `anthropic/claude-sonnet-5` via OpenRouter (main model, auxiliaries and delegation) |
+| OpenRouter key | Required — prompted on first run, stored in `~/.hermes/.env` |
+| Corporate MCPs | Atlassian, Granola, Slack and Metabase from a centrally managed `mcp.json` on GCS (additive merge) |
+| gcloud | Installed and authenticated with your `@genialcare.com.br` account |
+| Browser | Chrome with remote debugging (CDP) on port 9222, isolated profile |
+| gws | Authentication guidance (client_secret downloaded from GCS) |
 
-## Instalação (após ter o Hermes instalado)
+## Installation (after installing Hermes)
 
 ```shell
 hermes plugins install GenialCare/hermes-plugin-genial --enable
 hermes genial-setup
 ```
 
-## Desenvolvimento
+## Development
 
 ```shell
 python3 -m venv .venv
@@ -29,14 +32,20 @@ python3 -m venv .venv
 .venv/bin/pytest -v
 ```
 
-Validação oficial do Hermes (mesmo gate da catalog CI):
+Official Hermes validation (the same gate as the catalog CI):
 
 ```shell
 hermes plugins validate . --json
 ```
 
-## Plano
+## Conventions
 
-O plano de implementação completo vive em `.hermes/plans/` da máquina do
-autor — as fases: esqueleto → gcloud → GCS (mcp.json + client_secret
-centralizados) → integração → documentação e transição dos scripts antigos.
+- Code, docstrings, comments and documentation in English
+- User-facing CLI messages in Portuguese (plugin audience)
+- Conventional Commits for every commit (`feat:`, `fix:`, `docs:`, ...)
+
+## Plan
+
+The full implementation plan lives in the author's `.hermes/plans/` — phases:
+skeleton → gcloud → GCS (centralized mcp.json + client_secret) → integration →
+documentation and legacy script transition.

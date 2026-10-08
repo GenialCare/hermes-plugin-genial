@@ -1,7 +1,10 @@
-"""Parser e handler do comando `hermes genial-setup`.
+"""Parser and handler for the `hermes genial-setup` command.
 
-Funções puras (sem tocar em HERMES_HOME) para serem testáveis sem o
-runtime do Hermes. As ações concretas entram nas Tasks 1.2+ (Fases 1-4).
+Pure functions (no HERMES_HOME access) so they can be tested without the
+Hermes runtime. Concrete actions land in Tasks 1.2+ (Phases 1-4).
+
+User-facing strings (help texts, prints) are in Portuguese — the plugin's
+audience is the Genial Care team. See README "Conventions".
 """
 
 from __future__ import annotations
@@ -13,7 +16,7 @@ PROG = "genial-setup"
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Parser standalone — usado nos testes e espelhado no register_cli()."""
+    """Standalone parser — used in tests and mirrored by register_cli()."""
     parser = argparse.ArgumentParser(
         prog=PROG,
         description="Setup guiado do Hermes na Genial Care",
@@ -40,8 +43,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def register_cli(subparser: argparse.ArgumentParser) -> None:
-    """setup_fn chamado pelo Hermes: recebe o subparser do comando e espelha
-    as mesmas flags do parser standalone."""
+    """setup_fn called by Hermes: receives the command subparser and mirrors
+    the same flags from the standalone parser."""
     subparser.add_argument(
         "--force-mcps", action="store_true",
         help="Sobrescreve os MCPs corporativos existentes com os valores oficiais do GCS",
@@ -61,12 +64,12 @@ def register_cli(subparser: argparse.ArgumentParser) -> None:
 
 
 def run(args: argparse.Namespace) -> int:
-    """handler_fn chamado pelo Hermes quando o usuário roda `hermes genial-setup`."""
+    """handler_fn called by Hermes when the user runs `hermes genial-setup`."""
     action = getattr(args, "subcommand", None) or "setup"
     print(f"genial-setup: ação '{action}' ainda não implementada (Tasks 1.2+ do plano).")
     print("Estrutura do comando no ar — as ações reais chegam nas próximas fases.")
     return 0
 
 
-if __name__ == "__main__":  # permite debug local: python -m genial_setup.cli
+if __name__ == "__main__":  # local debugging: python -m genial_setup.cli
     sys.exit(run(build_parser().parse_args()))
