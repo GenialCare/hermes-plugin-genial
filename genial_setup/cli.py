@@ -9,6 +9,7 @@ See README "Conventions".
 from __future__ import annotations
 
 import argparse
+import getpass
 import os
 import sys
 
@@ -71,7 +72,9 @@ def _run_setup(args: argparse.Namespace) -> int:
     print("==> Configurando provider LLM (Claude Sonnet 5 via OpenRouter)...")
 
     def prompt() -> str:
-        return input("Cole sua chave OpenRouter (sk-or-...) e pressione Enter: ")
+        # getpass: no terminal echo — the key must not appear on screen, in
+        # scrollback, or in recorded/shared sessions (review M3).
+        return getpass.getpass("Cole sua chave OpenRouter (sk-or-...) e pressione Enter: ")
 
     try:
         result = config.ensure_key(

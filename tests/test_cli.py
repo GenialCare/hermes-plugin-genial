@@ -110,7 +110,7 @@ def mocked_config(monkeypatch, hermes_home):
 
 def test_run_setup_saves_key_from_prompt_and_applies_provider(mocked_config, monkeypatch, capsys):
     hermes_home, calls = mocked_config
-    monkeypatch.setattr("builtins.input", lambda prompt="": "sk-or-typed")
+    monkeypatch.setattr(cli.getpass, "getpass", lambda prompt="": "sk-or-typed")
     rc = cli.run(cli.build_parser().parse_args([]))
     out = capsys.readouterr().out
     assert rc == 0
@@ -142,7 +142,7 @@ def test_run_setup_missing_key_fails_with_guidance(mocked_config, monkeypatch, c
 
 def test_run_setup_missing_key_never_prints_typed_secret(mocked_config, monkeypatch, capsys):
     """The typed key must not leak to stdout even in the failure path."""
-    monkeypatch.setattr("builtins.input", lambda prompt="": "sk-or-secret-typed")
+    monkeypatch.setattr(cli.getpass, "getpass", lambda prompt="": "sk-or-secret-typed")
     monkeypatch.setattr(
         cli.config,
         "ensure_key",
@@ -151,6 +151,27 @@ def test_run_setup_missing_key_never_prints_typed_secret(mocked_config, monkeypa
     cli.run(cli.build_parser().parse_args([]))
     out = capsys.readouterr().out
     assert "sk-or-secret-typed" not in out
+
+
+def test_run_setup_prompts_via_getpass_never_input(mocked_config, monkeypatch):
+    """Review M3: the key must be typed WITHOUT terminal echo — getpass
+    (no echo), never input() (echoes; leaks to scrollback/recordings)."""
+    seen_prompts: list[str] = []
+
+    def fake_getpass(prompt=""):
+        seen_prompts.append(prompt)
+        return "sk-or-hidden"
+
+    monkeypatch.setattr(cli.getpass, "getpass", fake_getpass)
+
+    def forbidden_input(prompt=""):
+        raise AssertionError("input() must not be used for the key (echoes on screen)")
+
+    monkeypatch.setattr("builtins.input", forbidden_input)
+
+    rc = cli.run(cli.build_parser().parse_args([]))
+    assert rc == 0
+    assert seen_prompts and seen_prompts[0].startswith("Cole sua chave")
 
 
 def test_run_pending_subcommands_say_so_explicitly(capsys):
