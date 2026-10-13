@@ -7,6 +7,8 @@ are not implemented yet must say so explicitly.
 
 from __future__ import annotations
 
+import argparse
+
 import pytest
 
 from genial_setup import cli, config
@@ -36,6 +38,62 @@ def test_parser_default_action_is_full_setup():
 def test_parser_accepts_gcloud_and_status_subcommands():
     assert cli.build_parser().parse_args(["gcloud"]).subcommand == "gcloud"
     assert cli.build_parser().parse_args(["status"]).subcommand == "status"
+
+
+# --- Drift guard (review M1) -------------------------------------------------
+# build_parser() (tests/local debugging) and register_cli() (what Hermes runs
+# in production) MUST expose identical flags and subcommands. The test suite
+# only exercises the standalone parser, so production-only drift would be
+# invisible without this comparison.
+
+
+def _registered_parser() -> argparse.ArgumentParser:
+    """Simulate what Hermes does: a fresh parser with register_cli() applied."""
+    parser = argparse.ArgumentParser(prog=cli.PROG)
+    cli.register_cli(parser)
+    return parser
+
+
+def _signature(parser: argparse.ArgumentParser) -> tuple:
+    """Structural signature: option strings per action + subcommand names."""
+    options = sorted(
+        tuple(sorted(action.option_strings))
+        for action in parser._actions
+        if action.option_strings
+    )
+    sub = next((a for a in parser._actions if a.dest == "subcommand"), None)
+    subcommands = sorted(sub.choices.keys()) if sub else []
+    return options, subcommands
+
+
+def test_registered_parser_matches_standalone_signature():
+    assert _signature(_registered_parser()) == _signature(cli.build_parser()), (
+        "drift detected: the parser registered with Hermes differs from the "
+        "standalone build_parser() — both must go through _add_arguments()"
+    )
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        [],
+        ["--force-mcps"],
+        ["--skip-browser", "--skip-gcloud"],
+        ["gcloud"],
+        ["status"],
+    ],
+)
+def test_registered_parser_parses_identically(argv):
+    """Both parsers must produce the same Namespace for the same argv —
+    catches default-value and dest drift, not just names."""
+    standalone = vars(cli.build_parser().parse_args(argv))
+    registered = vars(_registered_parser().parse_args(argv))
+    standalone.pop("func", None)
+    registered.pop("func", None)
+    assert standalone == registered
+
+
+# -----------------------------------------------------------------------------
 
 
 @pytest.fixture
